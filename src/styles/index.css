@@ -10,10 +10,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.form_4{background-image:url('../images/form_4_bg@2x.jpg');}
+.form_4{background-image:url('../images/form_4_bg@2x.webp');}
 
 @media(-webkit-min-device-pixel-ratio: 1.25), (min-resolution: 120dpi){
-  .form_4{background-image:url('../images/form_4_bg@2x.jpg');}
+  .form_4{background-image:url('../images/form_4_bg@2x.webp');}
 }
 
 

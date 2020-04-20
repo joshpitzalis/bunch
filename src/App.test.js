@@ -8,4 +8,6 @@
 //   expect(linkElement).toBeInTheDocument();
 // });
 
-it.todo('form errors poup in modal for sign in form')
+it.todo("form errors poup in modal for sign in form");
+it.todo("compress image on landing");
+it.todo("share order page without auth remove headers");

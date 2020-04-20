@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default () => {
   const location = useLocation();
@@ -18,9 +18,9 @@ export default () => {
             data-aos="fade-down"
             data-aos-delay="300"
           >
-            <button type="button" className="btn logo color-white">
+            <Link to="/dashboard/123" className="btn logo color-white">
               Bunch
-            </button>
+            </Link>
           </div>
           {/* <div className="col-lg-6" data-aos-duration="600" data-aos="fade-down" data-aos-delay="0">
  
