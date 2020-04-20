@@ -1,3 +1,3 @@
 module.exports = {
-  components: "src/features/**/components/*.jsx"
+  components: ["src/features/**/components/*.jsx"]
 };
