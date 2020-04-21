@@ -37,6 +37,16 @@ export default ({auth}) => {
       .set({ name, mobile, uid }, { merge: true })
       .catch(console.error);
 
+  React.useEffect(() => {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+      "recaptcha",
+      {
+        size: "invisible"
+      }
+    );
+    return () => window.recaptchaVerifier.clear();
+  }, []);
+
   const handleSubmit = () => {
     if (!state.name || !state.mobile) {
       setToast({
@@ -132,8 +142,7 @@ export default ({auth}) => {
                                 dispatch({
                                   type: "setName",
                                   value: e.target.value
-                                })
-                              }
+                                })}
                             />
                             <PhoneInput
                               country="in"
@@ -144,7 +153,8 @@ export default ({auth}) => {
                                 dispatch({
                                   type: "setMobile",
                                   value: phone
-                                })}
+                                })
+                              }
                               buttonClass=" mt2 h2"
                               containerClass="input border-gray "
                               inputProps={{

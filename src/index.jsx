@@ -40,16 +40,6 @@ const Routes = () => {
     firebase &&
       firebase.auth() &&
       firebase.auth().onAuthStateChanged(user => setAuth(user));
-  }, [firebase]);
-
-  React.useEffect(() => {
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
-      "recaptcha",
-      {
-        size: "invisible"
-      }
-    );
-    return () => window.recaptchaVerifier.clear();
   }, []);
 
   return (
@@ -60,7 +50,7 @@ const Routes = () => {
           <Login auth={auth} />
         </Route>
         <PrivateRoute auth={auth} path="/dashboard/:userId">
-          <Dashboard />
+          <Dashboard auth={auth} />
         </PrivateRoute>
         <Route path="/order/:orderId">
           <Order auth={auth} />

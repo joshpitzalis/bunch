@@ -4,7 +4,7 @@ import NewOrder from "../features/orders/createNewOrder";
 
 const firstTimeUser = false;
 
-export default function Dashboard() {
+export default function Dashboard({auth}) {
   const [newOrder, setOrder] = React.useState(false);
 
   const handleCreateOrder = () => setOrder(true);
@@ -43,7 +43,11 @@ export default function Dashboard() {
   }
 
   if (newOrder) {
-    return <NewOrder />;
+    return (
+      <div>
+        <NewOrder uid={auth.uid} />
+      </div>
+    );
   }
 
   return (
