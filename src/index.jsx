@@ -1,32 +1,75 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Switch, Route } from "react-router-dom";
+
 import { ZEITUIProvider, CSSBaseline } from "@zeit-ui/react";
 import "./styles/index.css";
+import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Dashboard from './pages/Dashboard.jsx';
 import Order from './pages/Order.jsx';
 import * as serviceWorker from "./serviceWorker";
 import Navbar from "./features/header/Navbar";
 import Footer from "./features/footer/Footer";
+import firebase from "./utils/firebase";
 
-const Routes = () => (
-  <BrowserRouter>
-    <Navbar />
-    <Switch>
-      <Route exact path="/">
-        <Login />
-      </Route>
-      <Route path="/dashboard/:userId">
-        <Dashboard />
-      </Route>
-      <Route path="/order/:orderId">
-        <Order />
-      </Route>
-    </Switch>
-    <Footer />
-  </BrowserRouter>
-);
+// A wrapper for <Route> that redirects to the login
+// screen if you're not yet authenticated.
+function PrivateRoute({ auth, children, ...rest }) {
+  return (
+    <Route
+      {...rest}
+      render={({ location }) =>
+        auth ? (
+          children
+        ) : (
+          <Redirect
+            to={{
+              pathname: "/",
+              state: { from: location }
+            }}
+          />
+        )}
+    />
+  );
+}
+
+const Routes = () => {
+  const [auth, setAuth] = React.useState(false);
+
+  React.useEffect(() => {
+    firebase &&
+      firebase.auth() &&
+      firebase.auth().onAuthStateChanged(user => setAuth(user));
+  }, [firebase]);
+
+  React.useEffect(() => {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+      "recaptcha",
+      {
+        size: "invisible"
+      }
+    );
+    return () => window.recaptchaVerifier.clear();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Navbar />
+      <Switch>
+        <Route exact path="/">
+          <Login auth={auth} />
+        </Route>
+        <PrivateRoute auth={auth} path="/dashboard/:userId">
+          <Dashboard />
+        </PrivateRoute>
+        <Route path="/order/:orderId">
+          <Order auth={auth} />
+        </Route>
+      </Switch>
+      <Footer />
+    </BrowserRouter>
+  );
+};
 
 ReactDOM.render(
   <React.StrictMode>
