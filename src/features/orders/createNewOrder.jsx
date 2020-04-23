@@ -9,6 +9,8 @@ export default ({ uid, setOrder }) => {
   const [, setToast] = useToasts();
   const history = useHistory();
 
+  const [user, setUser] = React.useState({ name: "", mobile: "" });
+
   const formik = useFormik({
     initialValues: {
       what: "",
@@ -16,6 +18,7 @@ export default ({ uid, setOrder }) => {
       when: "",
       who: "",
       minimum: "",
+      minimumKind: "rupees",
       menu: ""
     },
     validate: values => {
@@ -56,6 +59,7 @@ export default ({ uid, setOrder }) => {
     touched,
     isSubmitting
   } = formik;
+
   return (
     <section className="pt-105 pb-100 bg-light form_14">
       <div className="container px-xl-0">
@@ -165,14 +169,28 @@ export default ({ uid, setOrder }) => {
                       <div className="mb-10 f-14 semibold text-uppercase sp-20">
                         Minimum order
                       </div>
-                      <input
-                        type="text"
-                        name="minimum"
-                        required
-                        className="input w-full border-gray focus-action-1 color-heading placeholder-heading"
-                        onChange={handleChange}
-                        value={values.minimum}
-                      />
+                      <div className="input w-full border-gray focus-action-1 color-heading placeholder-heading  ">
+                        <input
+                          type="number"
+                          name="minimum"
+                          required
+                          placeholder="0"
+                          onChange={handleChange}
+                          value={values.minimum}
+                          className="tr pt2"
+                        />
+                        <select
+                          className="w4 pt2"
+                          name="minimumKind"
+                          value={values.minimumKind}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                        >
+                          <option value="rupees">Rupees</option>
+                          <option value="kilograms">Kilograms</option>
+                          <option value="pieces">Pieces</option>
+                        </select>
+                      </div>
                     </div>
                     <div
                       className="col-md-6 mb-35 block"

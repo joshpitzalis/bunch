@@ -12,7 +12,8 @@ export default ({
   myOrderIndex,
   auth,
   name,
-  mobile
+  mobile,
+  minimumKind
 }) => {
   React.useEffect(() => {
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
@@ -139,8 +140,6 @@ export default ({
     handleBlur,
     touched
   } = formik;
-
-  console.log({ values, uid });
 
   return (
     <form>

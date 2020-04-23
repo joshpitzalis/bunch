@@ -4,37 +4,85 @@ import { useToasts } from "@zeit-ui/react";
 import NewOrder from "../features/orders/createNewOrder";
 import firebase from "../utils/firebase";
 
+const orderedSoFar = (minimumKind, members) => {
+  const orderTotalAmount =
+    members &&
+    members.reduce(
+      (acc, { order }) =>
+        acc + order.reduce((_acc, { amount }) => _acc + Number(amount), 0),
+      0
+    );
+
+  return minimumKind === "rupees"
+    ? orderTotalAmount
+    : members &&
+        members.reduce(
+          (acc, { order }) =>
+            acc +
+            order.reduce((_acc, { quantity }) => _acc + Number(quantity), 0),
+          0
+        );
+};
+
 const useGetUserOrders = uid => {
   const [orders, setOrders] = React.useState([]);
   const [, setToast] = useToasts();
-  React.useEffect(
-    () =>
-      firebase
+  React.useEffect(() => {
+    let unsubscribe;
+    try {
+      unsubscribe = firebase
         .firestore()
         .collection("orders")
         .where("people", "array-contains", uid)
-        .get()
-        .then(collection => {
+        .onSnapshot(collection => {
           const myOrders = collection.docs.map(doc => doc.data());
           setOrders(myOrders);
-        })
-        .catch(error =>
-          setToast({
-            text: `${error.code} ${error.message}`,
-            type: "warning"
-          })
-        )[uid]
-  );
+        });
+    } catch (error) {
+      setToast({
+        text: `${error.code} ${error.message}`,
+        type: "warning"
+      });
+    }
+    return () => unsubscribe();
+  }, [uid]);
 
   return orders;
 };
 
-export default function Dashboard({auth}) {
+export default function Dashboard({ auth }) {
   const [newOrder, setOrder] = React.useState(false);
 
   const handleCreateOrder = () => setOrder(true);
 
   const orders = useGetUserOrders(auth.uid);
+
+  const [, setToast] = useToasts();
+  const handleArchive = id =>
+    firebase
+      .firestore()
+      .collection("orders")
+      .doc(id)
+      .set({ status: "archived" }, { merge: true })
+      .catch(error =>
+        setToast({
+          text: `${error.code} ${error.message}`,
+          type: "warning"
+        })
+      );
+
+  const handleReorder = id =>
+    firebase
+      .firestore()
+      .collection("orders")
+      .doc(id)
+      .set({ status: "null" }, { merge: true })
+      .catch(error =>
+        setToast({
+          text: `${error.code} ${error.message}`,
+          type: "warning"
+        })
+      );
 
   if (newOrder) {
     return (
@@ -92,8 +140,10 @@ export default function Dashboard({auth}) {
             data-aos-delay="0"
           >
             <h2 className="small">
-              {`${orders.length} Active Group             ${
-                orders.length > 1 ? "Orders" : "Order"
+              {`${
+                orders.filter(list => list.status !== "archived").length
+              } Active Group             ${
+                orders.length === 1 ? "Order" : "Orders"
               }`}
             </h2>
           </div>
@@ -112,106 +162,119 @@ export default function Dashboard({auth}) {
             </button>
           </div>
         </div>
-        <div className="mt-40 row align-items-stretch">
-          {orders &&
-            orders.map(({ what, when, where, who, id }, index) => {
-              const first = index === 0;
-              return (
-                <div
-                  key={id}
-                  className="mb-30  col-md-6"
-                  data-aos-duration="600"
-                  data-aos="fade-down"
-                  data-aos-delay="0"
-                >
-                  <div
-                    className={`h-full radius10 pt-55 pb-50  ${
-                      first ? "bg-action-2 color-white" : "ba b--light-gray"
-                    }`}
-                  >
-                    <div className="row justify-content-center">
-                      <div className="col-xl-9 col-10">
-                        <div className="flex justify-between items-baseline">
-                          <div className="mb-15 f-22 title">
-                            {`${what} from ${where}`}
-                          </div>
-                        </div>
-                        <div className="text-adaptive">
-                          {`${who} is handling this order.`}
-                          <br />
-                          5kg / 5kg ordered
-                        </div>
-                        {first ? (
-                          <Link
-                            to={`/order/${id}`}
-                            className="btn mt-40 sm action-1"
-                          >
-                            <small className="color-main action-3">
-                              Ready for you to order
-                            </small>
-                          </Link>
-                        ) : (
-                          <Link
-                            to={`/order/${id}`}
-                            className=" mt-40 mt-40 f6  no-underline br-pill ba ph3 pv2 mb2 dib light-gray bw1"
-                          >
-                            <small className="color-main action-2">View</small>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
+        <OrderCards
+          orders={orders}
+          handleReorder={handleReorder}
+          handleArchive={handleArchive}
+        />
 
-        <div className="row justify-content-start align-items-center align-items-lg-end text-center">
-          <div
-            className="col-md-8 col-sm-7 text-sm-left"
-            data-aos-duration="600"
-            data-aos="fade-down"
-            data-aos-delay="0"
-          >
-            <h2 className="small mt6">2 Past Orders</h2>
+        {!!orders.filter(list => list.status === "archived").length && (
+          <div className="row justify-content-start align-items-center align-items-lg-end text-center">
+            <div
+              className="col-md-8 col-sm-7 text-sm-left"
+              data-aos-duration="600"
+              data-aos="fade-down"
+              data-aos-delay="0"
+            >
+              <h2 className="small mt6">
+                {`${
+                  orders.filter(list => list.status === "archived").length
+                } Active Group             ${
+                  orders.length === 1 ? "Order" : "Orders"
+                }`}
+              </h2>
+            </div>
           </div>
-        </div>
-        <div className="mt-40 row align-items-stretch">
-          {orders &&
-            orders.map(order => (
-              <div
-                key={order.id}
-                className="mb-30 col-md-6 pointer"
-                data-aos-duration="600"
-                data-aos="fade-down"
-                data-aos-delay="0"
-              >
-                <div className="h-full radius10 pt-55 pb-50 ba b--light-gray bg-light-gray ">
-                  <div className="row justify-content-center">
-                    <div className="col-xl-9 col-10">
-                      <div className="flex justify-between items-baseline">
-                        <div className="mb-15 f-22 title">
-                          Coffee from G-shot
-                        </div>
-                      </div>
-                      <div className="text-adaptive">
-                        5kg / 5kg ordered
-                        <br />
-                        Joshua is handling this order.
-                      </div>
-                      <Link
-                        to={`/order/${order.id}`}
-                        className=" mt-40 f6  no-underline br-pill ba ph3 pv2 mb2 dib dark-gray bg-white b--white"
-                      >
-                        <small className="color-main action-3">Re-order</small>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-        </div>
+        )}
+        <OrderCards
+          orders={orders}
+          archived
+          handleReorder={handleReorder}
+          handleArchive={handleArchive}
+        />
       </div>
     </section>
   );
 }
+
+const OrderCards = ({ orders, archived, handleReorder, handleArchive }) => (
+  <div className="mt-40 row align-items-stretch">
+    {orders &&
+      orders
+        .filter(list =>
+          archived ? list.status === "archived" : list.status !== "archived"
+        )
+        .map(
+          (
+            { what, when, where, who, id, minimumKind, members, minimum },
+            index
+          ) => {
+            const ready = orderedSoFar(minimumKind, members) > minimum;
+            return (
+              <div
+                key={id}
+                className="mb-30  col-md-6"
+                data-aos-duration="600"
+                data-aos="fade-down"
+                data-aos-delay="0"
+              >
+                <div
+                  className={`h-full radius10 pt-55 pb-50  ${
+                    !archived && ready
+                      ? "bg-action-2 color-white"
+                      : "ba b--light-gray"
+                  }`}
+                >
+                  <div className="row justify-content-center">
+                    <div className="col-xl-9 col-10">
+                      <div className="flex justify-between items-baseline">
+                        <div className="mb-15 f-22 title">
+                          {!archived && ready && (
+                            <Link to={`/order/${id}`}>🔗</Link>
+                          )}
+{' '}
+{" "}
+                          {`${what} from ${where}`}
+                        </div>
+                      </div>
+                      <div className="text-adaptive">
+                        {!archived && `${who} is handling this order.`}
+                        <br />
+                        {`${orderedSoFar(
+                          minimumKind,
+                          members
+                        )} ${minimumKind} / ${minimum} ${minimumKind} ordered`}
+                        <br />
+                        {!archived && `Deadline set for ${when}`}
+                      </div>
+                      {ready ? (
+                        <button
+                          type="button"
+                          className="btn mt-40 sm action-1"
+                          onClick={() =>
+                            archived ? handleReorder(id) : handleArchive(id)
+                          }
+                        >
+                          <small className="color-main action-3">
+                            {archived
+                              ? "Re-order"
+                              : "Archive when you place order"}
+                          </small>
+                        </button>
+                      ) : (
+                        <Link
+                          to={`/order/${id}`}
+                          className=" mt-40 mt-40 f6  no-underline br-pill ba ph3 pv2 mb2 dib light-gray bw1"
+                        >
+                          <small className="color-main action-2">View</small>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+        )}
+  </div>
+);

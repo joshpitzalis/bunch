@@ -20,15 +20,18 @@ export default function Order({auth}) {
     return () => unsubscribe();
   }, [orderId]);
 
-  const { what, where, when, who, minimum, menu, members } = orderDetails;
+  const {
+    what,
+    where,
+    when,
+    who,
+    minimum,
+    menu,
+    members,
+    minimumKind,
+    status
+  } = orderDetails;
 
-  const orderTotalQuantity =
-    members &&
-    members.reduce(
-      (acc, { order }) =>
-        acc + order.reduce((_acc, { quantity }) => _acc + Number(quantity), 0),
-      0
-    );
   const orderTotalAmount =
     members &&
     members.reduce(
@@ -36,6 +39,17 @@ export default function Order({auth}) {
         acc + order.reduce((_acc, { amount }) => _acc + Number(amount), 0),
       0
     );
+
+  const orderTotalQuantity =
+    minimumKind === "rupees"
+      ? orderTotalAmount
+      : members &&
+        members.reduce(
+          (acc, { order }) =>
+            acc +
+            order.reduce((_acc, { quantity }) => _acc + Number(quantity), 0),
+          0
+        );
 
   const myOrderIndex =
     members && members.findIndex(item => item.uid === auth && auth.uid);
@@ -51,6 +65,7 @@ export default function Order({auth}) {
         .doc(auth.uid)
         .onSnapshot(doc => setUser(doc.data()));
     }
+
     return () => {
       if (auth && auth.uid) {
         unsubscribe();
@@ -96,7 +111,7 @@ export default function Order({auth}) {
                 data-aos-delay="300"
               >
                 <br />
-                Minimum order
+                {`Minimum order ${minimumKind}`}
                 <br />
                 <span className="f1 ttu pt3">{minimum}</span>
                 <br />
@@ -112,7 +127,14 @@ export default function Order({auth}) {
                 <br />
                 Link To
                 <br />
-                <span className="f1 ttu pt3 underline">Prices</span>
+                <a
+                  href={menu}
+                  className="f1 ttu pt3 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {menu}
+                </a>
                 <br />
               </div>
             )}
@@ -134,7 +156,7 @@ export default function Order({auth}) {
                   minimum - orderTotalQuantity > 0
                     ? minimum - orderTotalQuantity
                     : 0
-                } more ${when && `by ${when}`}
+                } ${minimumKind} more ${when && `by ${when}`}
 to complete the order.`}
               </h4>
               <div className="table-responsive-shadow">
@@ -216,55 +238,56 @@ to complete the order.`}
           </div>
         </div>
       </section>
-
-      {orderJoined ? (
-        <JoinOrder
-          finalizeOrder={() => setJoin(false)}
-          auth={auth}
-          orderId={orderId}
-          members={members}
-          myOrderIndex={myOrderIndex}
-          name={user && user.name}
-          mobile={user && user.mobile}
-        />
-      ) : (
-        <section className="pt-30 pb-95 bg-light text-center call_to_action_1">
-          <div className="container px-xl-0">
-            <div className="row justify-content-center">
-              {/* <div className="col-xl-8 col-lg-10">
+      {status !== "archived" &&
+        (orderJoined ? (
+          <JoinOrder
+            finalizeOrder={() => setJoin(false)}
+            auth={auth}
+            orderId={orderId}
+            members={members}
+            myOrderIndex={myOrderIndex}
+            name={user && user.name}
+            mobile={user && user.mobile}
+            minimumKind={minimumKind}
+          />
+        ) : (
+          <section className="pt-30 pb-95 bg-light text-center call_to_action_1">
+            <div className="container px-xl-0">
+              <div className="row justify-content-center">
+                {/* <div className="col-xl-8 col-lg-10">
 						<h2 data-aos-duration="600" data-aos="fade-down" data-aos-delay="0">Get Startup Framework</h2>
 					</div> */}
-              <div className="col-xl-7 col-lg-9 col-md-10">
-                <div
-                  data-aos-duration="600"
-                  data-aos="fade-down"
-                  data-aos-delay="600"
-                >
-                  <button
-                    type="button"
-                    onClick={handleJoinOrder}
-                    className="btn mb-30 lg action-1"
+                <div className="col-xl-7 col-lg-9 col-md-10">
+                  <div
+                    data-aos-duration="600"
+                    data-aos="fade-down"
+                    data-aos-delay="600"
                   >
-                    {auth && auth.uid && myOrderIndex
-                      ? "Change my order"
-                      : "Join the group order"}
-                  </button>
-                </div>
-                {/* <div className="color-heading text-adaptive" data-aos-duration="600" data-aos="fade-down" data-aos-delay="600">Commercial License
+                    <button
+                      type="button"
+                      onClick={handleJoinOrder}
+                      className="btn mb-30 lg action-1"
+                    >
+                      {auth && auth.uid && myOrderIndex
+                        ? "Change my order"
+                        : "Join the group order"}
+                    </button>
+                  </div>
+                  {/* <div className="color-heading text-adaptive" data-aos-duration="600" data-aos="fade-down" data-aos-delay="600">Commercial License
 						</div> */}
-                <div
-                  className="mt-20 mb-60 f-22 color-heading text-adaptive description"
-                  data-aos-duration="600"
-                  data-aos="fade-down"
-                  data-aos-delay="300"
-                >
-                  {`${who} is handling the final order and sorting out pick up.`}
+                  <div
+                    className="mt-20 mb-60 f-22 color-heading text-adaptive description"
+                    data-aos-duration="600"
+                    data-aos="fade-down"
+                    data-aos-delay="300"
+                  >
+                    {`${who} is handling the final order and sorting out pick up.`}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        ))}
     </>
   );
 }
