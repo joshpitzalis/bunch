@@ -36,7 +36,8 @@
     "eject": "react-scripts eject",
     "styleguide": "styleguidist server",
     "styleguide:build": "styleguidist build",
-    "rules": "firebase deploy --only firestore:rules"
+    "rules": "firebase deploy --only firestore:rules",
+    "deploy": "firebase deploy --only hosting"
   },
   "eslintConfig": {
     "extends": "react-app"

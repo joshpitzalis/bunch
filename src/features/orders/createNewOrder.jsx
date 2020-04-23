@@ -2,9 +2,10 @@ import React from "react";
 import { useFormik } from "formik";
 import { useToasts } from "@zeit-ui/react";
 import { useHistory } from "react-router-dom";
+import PropTypes from "prop-types";
 import firebase from "../../utils/firebase";
 
-export default ({ uid }) => {
+export default ({ uid, setOrder }) => {
   const [, setToast] = useToasts();
   const history = useHistory();
 
@@ -34,7 +35,7 @@ export default ({ uid }) => {
         .firestore()
         .collection(`orders`)
         .doc(doc.id)
-        .set({ ...values, members: [uid], id: doc.id }, { merge: true })
+        .set({ ...values, id: doc.id, members: [] }, { merge: true })
         .then(() => history.push(`/order/${doc.id}`))
         .catch(error => {
           setToast({
@@ -61,7 +62,7 @@ export default ({ uid }) => {
         <div className="row justify-content-center">
           <div className="col-lg-10">
             <h2
-              className="small text-center"
+              className="small text-center pb3"
               data-aos-duration="600"
               data-aos="fade-down"
               data-aos-delay="0"
@@ -206,6 +207,21 @@ export default ({ uid }) => {
                         Create Group Order Sheet
                       </button>
                     </div>
+
+                    <div
+                      className="col-xl-3 col-lg-4 col-md-5 col-sm-6"
+                      data-aos-duration="600"
+                      data-aos="fade-down"
+                      data-aos-delay="300"
+                    >
+                      <button
+                        onClick={() => setOrder(false)}
+                        type="submit"
+                        className="btn w-full px-2 action-3 medium ph3"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -216,3 +232,36 @@ export default ({ uid }) => {
     </section>
   );
 };
+
+const propTypes = {
+  handleClick: PropTypes.func,
+  className: PropTypes.string
+};
+
+const defaultProps = {
+  handleClick: () => {},
+  className: ""
+};
+
+const Close = ({ handleClick, className }) => (
+  <div className={className}>
+    <button
+      type="button"
+      className="absolute d-flex align-items-center justify-content-center remove_product"
+      onClick={handleClick}
+    >
+      <svg
+        width="12"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M15 1L1 15" strokeWidth="2" strokeLinecap="round" />
+        <path d="M1 1L15 15" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </button>
+  </div>
+);
+
+Close.propTypes = propTypes;
+Close.defaultProps = defaultProps;

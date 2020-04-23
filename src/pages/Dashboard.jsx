@@ -1,15 +1,50 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useToasts } from "@zeit-ui/react";
 import NewOrder from "../features/orders/createNewOrder";
+import firebase from "../utils/firebase";
 
-const firstTimeUser = false;
+const useGetUserOrders = uid => {
+  const [orders, setOrders] = React.useState([]);
+  const [, setToast] = useToasts();
+  React.useEffect(
+    () =>
+      firebase
+        .firestore()
+        .collection("orders")
+        .where("people", "array-contains", uid)
+        .get()
+        .then(collection => {
+          const myOrders = collection.docs.map(doc => doc.data());
+          setOrders(myOrders);
+        })
+        .catch(error =>
+          setToast({
+            text: `${error.code} ${error.message}`,
+            type: "warning"
+          })
+        )[uid]
+  );
+
+  return orders;
+};
 
 export default function Dashboard({auth}) {
   const [newOrder, setOrder] = React.useState(false);
 
   const handleCreateOrder = () => setOrder(true);
 
-  if (firstTimeUser) {
+  const orders = useGetUserOrders(auth.uid);
+
+  if (newOrder) {
+    return (
+      <div>
+        <NewOrder uid={auth.uid} setOrder={setOrder} />
+      </div>
+    );
+  }
+
+  if (!orders.length) {
     return (
       <section className="pt-100 pb-100 bg-light text-center call_to_action_3">
         <div className="container px-xl-0">
@@ -23,14 +58,18 @@ export default function Dashboard({auth}) {
                   data-aos="fade-down"
                   data-aos-delay="300"
                 >
-                  Start your own minimum order
+                  Create your first group order.
                 </h2>
                 <div
                   data-aos-duration="600"
                   data-aos="fade-down"
                   data-aos-delay="600"
                 >
-                  <button type="button" className="btn lg action-1">
+                  <button
+                    type="button"
+                    onClick={handleCreateOrder}
+                    className="btn lg action-1"
+                  >
                     Start a new order
                   </button>
                 </div>
@@ -39,14 +78,6 @@ export default function Dashboard({auth}) {
           </div>
         </div>
       </section>
-    );
-  }
-
-  if (newOrder) {
-    return (
-      <div>
-        <NewOrder uid={auth.uid} />
-      </div>
     );
   }
 
@@ -60,7 +91,11 @@ export default function Dashboard({auth}) {
             data-aos="fade-down"
             data-aos-delay="0"
           >
-            <h2 className="small">2 Group Orders (1 is ready to order)</h2>
+            <h2 className="small">
+              {`${orders.length} Active Group             ${
+                orders.length > 1 ? "Orders" : "Order"
+              }`}
+            </h2>
           </div>
           <div
             className="col-md-4 col-sm-5 text-sm-right"
@@ -78,62 +113,57 @@ export default function Dashboard({auth}) {
           </div>
         </div>
         <div className="mt-40 row align-items-stretch">
-          <div
-            className="mb-30 mb-md-0 col-md-6"
-            data-aos-duration="600"
-            data-aos="fade-down"
-            data-aos-delay="0"
-          >
-            <div className="h-full radius10 pt-55 pb-50 bg-action-2 color-white">
-              <div className="row justify-content-center">
-                <div className="col-xl-9 col-10">
-                  <div className="flex justify-between items-baseline">
-                    <div className="mb-15 f-22 title">Coffee from G-shot</div>
+          {orders &&
+            orders.map(({ what, when, where, who, id }, index) => {
+              const first = index === 0;
+              return (
+                <div
+                  key={id}
+                  className="mb-30  col-md-6"
+                  data-aos-duration="600"
+                  data-aos="fade-down"
+                  data-aos-delay="0"
+                >
+                  <div
+                    className={`h-full radius10 pt-55 pb-50  ${
+                      first ? "bg-action-2 color-white" : "ba b--light-gray"
+                    }`}
+                  >
+                    <div className="row justify-content-center">
+                      <div className="col-xl-9 col-10">
+                        <div className="flex justify-between items-baseline">
+                          <div className="mb-15 f-22 title">
+                            {`${what} from ${where}`}
+                          </div>
+                        </div>
+                        <div className="text-adaptive">
+                          {`${who} is handling this order.`}
+                          <br />
+                          5kg / 5kg ordered
+                        </div>
+                        {first ? (
+                          <Link
+                            to={`/order/${id}`}
+                            className="btn mt-40 sm action-1"
+                          >
+                            <small className="color-main action-3">
+                              Ready for you to order
+                            </small>
+                          </Link>
+                        ) : (
+                          <Link
+                            to={`/order/${id}`}
+                            className=" mt-40 mt-40 f6  no-underline br-pill ba ph3 pv2 mb2 dib light-gray bw1"
+                          >
+                            <small className="color-main action-2">View</small>
+                          </Link>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-adaptive">
-                    5kg / 5kg ordered
-                    <br />
-                    Joshua is handling this order.
-                  </div>
-                  <Link to="/order/123" className="btn mt-40 sm action-1">
-                    <small className="color-main action-3">
-                      Ready for you to order
-                    </small>
-                  </Link>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div
-            className="col-md-6"
-            data-aos-duration="600"
-            data-aos="fade-down"
-            data-aos-delay="300"
-          >
-            <div
-              className="h-full radius10 pt-55 pb-50 color-white bg-dark"
-              id="showcase_10_block_with_bg"
-            >
-              <div className="row justify-content-center">
-                <div className="col-xl-9 col-10">
-                  <div className="mb-15 f-22 title">Bread from Paris Pao</div>
-                  <div className="text-adaptive">
-                    3 / 4 ordered
-                    <br />
-                    Sumukh is handling this order.
-                  </div>
-                  <Link to="/order/123" className="color-main">
-                    <button
-                      type="button"
-                      className="mt-40 btn sm action-white f-16"
-                    >
-                      View
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+              );
+            })}
         </div>
 
         <div className="row justify-content-start align-items-center align-items-lg-end text-center">
@@ -147,54 +177,39 @@ export default function Dashboard({auth}) {
           </div>
         </div>
         <div className="mt-40 row align-items-stretch">
-          <div
-            className="mb-30 col-md-6"
-            data-aos-duration="600"
-            data-aos="fade-down"
-            data-aos-delay="0"
-          >
-            <div className="h-full radius10 pt-55 pb-50 bg-gray">
-              <div className="row justify-content-center">
-                <div className="col-xl-9 col-10">
-                  <div className="mb-15 f-22 title">Cold Cuts</div>
-                  <div className="text-adaptive">
-                    14 ordered 10kg last time
-                    <br />
-                    Anjali handled the order.
+          {orders &&
+            orders.map(order => (
+              <div
+                key={order.id}
+                className="mb-30 col-md-6 pointer"
+                data-aos-duration="600"
+                data-aos="fade-down"
+                data-aos-delay="0"
+              >
+                <div className="h-full radius10 pt-55 pb-50 ba b--light-gray bg-light-gray ">
+                  <div className="row justify-content-center">
+                    <div className="col-xl-9 col-10">
+                      <div className="flex justify-between items-baseline">
+                        <div className="mb-15 f-22 title">
+                          Coffee from G-shot
+                        </div>
+                      </div>
+                      <div className="text-adaptive">
+                        5kg / 5kg ordered
+                        <br />
+                        Joshua is handling this order.
+                      </div>
+                      <Link
+                        to={`/order/${order.id}`}
+                        className=" mt-40 f6  no-underline br-pill ba ph3 pv2 mb2 dib dark-gray bg-white b--white"
+                      >
+                        <small className="color-main action-3">Re-order</small>
+                      </Link>
+                    </div>
                   </div>
-                  <Link
-                    to="/order/123"
-                    className="mt-40 btn sm action-white f-16"
-                  >
-                    <span className="color-main">Reorder</span>
-                  </Link>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div
-            className="mb-30 col-md-6"
-            data-aos-duration="600"
-            data-aos="fade-down"
-            data-aos-delay="300"
-          >
-            <div className="h-full radius10 pt-55 pb-50 with_border">
-              <div className="row justify-content-center">
-                <div className="col-xl-9 col-10">
-                  <div className="mb-15 f-22 title">Veg From Somewhere</div>
-                  <div className="text-adaptive">
-                    34 ordered Rs.5067 last time
-                    <br />
-                    Josh handled the order.
-                  </div>
-                  <Link to="/order/123" className="btn mt-40 sm action-1 f-16">
-                    Reorder
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+            ))}
         </div>
       </div>
     </section>

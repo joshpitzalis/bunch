@@ -1,10 +1,62 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 import JoinOrder from "../features/orders/JoinOrder";
+import firebase from "../utils/firebase";
 
-export default function Order() {
+export default function Order({auth}) {
   const [orderJoined, setJoin] = React.useState(false);
+  const [orderDetails, setOrderDetails] = React.useState({});
+
+  const { orderId } = useParams();
 
   const handleJoinOrder = () => setJoin(true);
+
+  React.useEffect(() => {
+    const unsubscribe = firebase
+      .firestore()
+      .collection("orders")
+      .doc(orderId)
+      .onSnapshot(doc => setOrderDetails(doc.data()));
+    return () => unsubscribe();
+  }, [orderId]);
+
+  const { what, where, when, who, minimum, menu, members } = orderDetails;
+
+  const orderTotalQuantity =
+    members &&
+    members.reduce(
+      (acc, { order }) =>
+        acc + order.reduce((_acc, { quantity }) => _acc + Number(quantity), 0),
+      0
+    );
+  const orderTotalAmount =
+    members &&
+    members.reduce(
+      (acc, { order }) =>
+        acc + order.reduce((_acc, { amount }) => _acc + Number(amount), 0),
+      0
+    );
+
+  const myOrderIndex =
+    members && members.findIndex(item => item.uid === auth && auth.uid);
+
+  const [user, setUser] = React.useState({ name: "", mobile: "" });
+
+  React.useEffect(() => {
+    let unsubscribe;
+    if (auth && auth.uid) {
+      unsubscribe = firebase
+        .firestore()
+        .collection("users")
+        .doc(auth.uid)
+        .onSnapshot(doc => setUser(doc.data()));
+    }
+    return () => {
+      if (auth && auth.uid) {
+        unsubscribe();
+      }
+    };
+  }, [auth && auth.uid]);
 
   return (
     <>
@@ -26,7 +78,7 @@ export default function Order() {
                 data-aos="fade-down"
                 data-aos-delay="300"
               >
-                Bread from Paris Pao
+                {`${what} from ${where}`}
               </h2>
             </div>
           </div>
@@ -35,10 +87,10 @@ export default function Order() {
 
       <section className="pt-20 pb-20 bg-light content_10">
         <div className="container px-xl-0">
-          <div className="row flex-row-reverse justify-content-end">
+          <div className="row flex justify-center">
             <div className="col-xl-3 col-lg-4 col-md-7">
               <div
-                className=" lh-title mb-10  bold  sp-20 color-heading text-adaptive"
+                className=" lh-title mb-10  bold  sp-20 color-heading text-adaptive flex flex-column items-center w5"
                 data-aos-duration="600"
                 data-aos="fade-down"
                 data-aos-delay="300"
@@ -46,23 +98,24 @@ export default function Order() {
                 <br />
                 Minimum order
                 <br />
-                <span className="f1 ttu pt3">4 Paos</span>
+                <span className="f1 ttu pt3">{minimum}</span>
                 <br />
               </div>
             </div>
-            <div className="col-xl-7 col-lg-8">
-              <ul
-                className="f-22 text-adaptive"
+            {!!menu && (
+              <div
+                className=" lh-title mb-10  bold  sp-20 color-heading text-adaptive flex flex-column items-center w5"
                 data-aos-duration="600"
                 data-aos="fade-down"
-                data-aos-delay="0"
+                data-aos-delay="300"
               >
-                <li>Deadline for the group order is 4pm, 20th April</li>
-                <li>Sumukh Shetty is handling the final order.</li>
-                <li>Sumukh Shetty is sorting out delivery.</li>
-              </ul>
-            </div>
-            <div className="col-xl-1" />
+                <br />
+                Link To
+                <br />
+                <span className="f1 ttu pt3 underline">Prices</span>
+                <br />
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -77,7 +130,12 @@ export default function Order() {
                 data-aos="fade-down"
                 data-aos-delay="0"
               >
-                We need to order 1 more pao to complete the order.
+                {`We need to order ${
+                  minimum - orderTotalQuantity > 0
+                    ? minimum - orderTotalQuantity
+                    : 0
+                } more ${when && `by ${when}`}
+to complete the order.`}
               </h4>
               <div className="table-responsive-shadow">
                 <div className="table-responsive-xl">
@@ -110,24 +168,30 @@ export default function Order() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr
-                        data-aos-duration="600"
-                        data-aos="fade-down"
-                        data-aos-delay="300"
-                      >
-                        <td>Josh</td>
-                        <td className="color-heading">2 Paos</td>
-                        <td className="tr">Rs.345</td>
-                      </tr>
-                      <tr
-                        data-aos-duration="600"
-                        data-aos="fade-down"
-                        data-aos-delay="450"
-                      >
-                        <td>Sumukh</td>
-                        <td className="color-heading">1 pao</td>
-                        <td className="tr">Rs. 280</td>
-                      </tr>
+                      {members &&
+                        !!members.length &&
+                        members.map(({ name, mobile, order }, index) => (
+                          <tr
+                            key={index}
+                            data-aos-duration="600"
+                            data-aos="fade-down"
+                            data-aos-delay="300"
+                          >
+                            <td>{`${name} +${mobile}`}</td>
+                            <td className="color-heading">
+                              {order.reduce(
+                                (acc, item) => acc + item.quantity,
+                                0
+                              )}
+                            </td>
+                            <td className="tr">
+                              {order.reduce(
+                                (acc, item) => acc + item.amount,
+                                0
+                              )}
+                            </td>
+                          </tr>
+                        ))}
 
                       <tr
                         data-aos-duration="600"
@@ -137,8 +201,12 @@ export default function Order() {
                         <td>
                           <b>Total</b>
                         </td>
-                        <td className="color-heading">3 pao</td>
-                        <td className="tr">Rs. 625</td>
+                        <td className="color-heading">
+                          <b>{orderTotalQuantity}</b>
+                        </td>
+                        <td className="tr">
+                          <b>{orderTotalAmount}</b>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -150,7 +218,15 @@ export default function Order() {
       </section>
 
       {orderJoined ? (
-        <JoinOrder finalizeOrder={() => setJoin(false)} />
+        <JoinOrder
+          finalizeOrder={() => setJoin(false)}
+          auth={auth}
+          orderId={orderId}
+          members={members}
+          myOrderIndex={myOrderIndex}
+          name={user && user.name}
+          mobile={user && user.mobile}
+        />
       ) : (
         <section className="pt-30 pb-95 bg-light text-center call_to_action_1">
           <div className="container px-xl-0">
@@ -169,7 +245,9 @@ export default function Order() {
                     onClick={handleJoinOrder}
                     className="btn mb-30 lg action-1"
                   >
-                    Join the group order
+                    {auth && auth.uid && myOrderIndex
+                      ? "Change my order"
+                      : "Join the group order"}
                   </button>
                 </div>
                 {/* <div className="color-heading text-adaptive" data-aos-duration="600" data-aos="fade-down" data-aos-delay="600">Commercial License
@@ -180,7 +258,7 @@ export default function Order() {
                   data-aos="fade-down"
                   data-aos-delay="300"
                 >
-                  If you want to add to the order click the Join button above.
+                  {`${who} is handling the final order and sorting out pick up.`}
                 </div>
               </div>
             </div>

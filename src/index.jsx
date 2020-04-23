@@ -44,7 +44,7 @@ const Routes = () => {
 
   return (
     <BrowserRouter>
-      <Navbar />
+      {auth && <Navbar auth={auth} />}
       <Switch>
         <Route exact path="/">
           <Login auth={auth} />
@@ -56,7 +56,7 @@ const Routes = () => {
           <Order auth={auth} />
         </Route>
       </Switch>
-      <Footer />
+      <Footer auth={auth} />
     </BrowserRouter>
   );
 };

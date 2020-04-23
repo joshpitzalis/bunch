@@ -1,7 +1,7 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
-export default () => {
+export default ({auth}) => {
   const location = useLocation();
 
   if (location?.pathname === "/") {
@@ -11,7 +11,7 @@ export default () => {
   return (
     <footer className="pt-45 pb-60 bg-dark color-white text-center text-lg-left footer_13">
       <div className="container px-xl-0">
-        <div
+        {/* <div
           className="lh-40 footer_links"
           data-aos-duration="600"
           data-aos="fade-down"
@@ -49,7 +49,7 @@ export default () => {
           >
             Terms
           </button>
-        </div>
+        </div> */}
         <div data-aos-duration="600" data-aos="fade-down" data-aos-delay="0">
           <div className="mt-35 mb-40 hr h-2 bg-white op-3" />
         </div>
@@ -62,9 +62,12 @@ export default () => {
                 data-aos="fade-down"
                 data-aos-delay="0"
               >
-                <button type="button" className="btn logo color-white">
+                <Link
+                  to={`/dashboard/${auth && auth.uid}`}
+                  className="btn logo color-white"
+                >
                   Bunch
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -75,15 +78,13 @@ export default () => {
             data-aos-delay="600"
           >
             <span className="d-inline-block socials">
-              <button type="button" className="btn color-white mx-15">
+              <a
+                href="https://twitter.com/joshpitzalis"
+                type="button"
+                className="btn color-white mx-15"
+              >
                 <i className="fab fa-twitter" />
-              </button>
-              <button type="button" className="btn color-white mx-15">
-                <i className="fab fa-facebook-f" />
-              </button>
-              <button type="button" className="btn color-white ml-15">
-                <i className="fab fa-google-plus-g" />
-              </button>
+              </a>
             </span>
           </div>
         </div>
