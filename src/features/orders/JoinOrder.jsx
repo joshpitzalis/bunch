@@ -287,7 +287,7 @@ const OrderRow = ({
     <div className="col-xl-4 col-md-5 col-11 d-flex align-items-center title">
       <textarea
         rows={3}
-        className="color-main f-18 flex-fill"
+        className="color-main f-18 flex-fill "
         value={item}
         name={`order[${index}.item]`}
         onChange={handleChange}
@@ -296,11 +296,12 @@ const OrderRow = ({
       />
     </div>
 
-    <div className=" mr-md-0 col-md-2 col-auto d-flex align-items-center  ">
+    <div className="mr-md-0 col-md-2 col-sm-12 col-auto d-flex align-items-center  ">
       <div className="relative quantity_selector">
         <input
           type="number"
           value={quantity}
+          placeholder="Quantity"
           name={`order[${index}.quantity]`}
           className="input w4 border-gray focus-action-2 placeholder-heading color-main"
           onChange={handleChange}
@@ -308,10 +309,10 @@ const OrderRow = ({
         />
       </div>
     </div>
-    <div className="relative col-xl-3 col-md-3 col d-flex align-items-center  price_holder">
+    <div className="relative col-xl-3 col-sm-12 col-md-3 col d-flex align-items-center price_holder ">
       <button
         type="button"
-        className="absolute d-flex align-items-center justify-content-center remove_product"
+        className="absolute d-flex align-items-center justify-content-center remove_product mt3 mt0-ns"
         onClick={() => {
           values.order = [
             ...values.order.slice(0, index),
@@ -334,6 +335,7 @@ const OrderRow = ({
         <input
           type="number"
           value={amount}
+          placeholder="Total Cost"
           name={`order[${index}.amount]`}
           className="input w4 border-gray focus-action-2 placeholder-heading color-main"
           onChange={handleChange}
@@ -341,6 +343,7 @@ const OrderRow = ({
         />
       </div>
     </div>
+
     <div className="d-md-none col-12 h-2 bg-gray hr" />
   </div>
 );

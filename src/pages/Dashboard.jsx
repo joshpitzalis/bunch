@@ -231,29 +231,31 @@ const OrderCards = ({ orders, archived, handleReorder, handleArchive }) => (
                         <div className="mb-15 f-22 title">
                           {!archived && ready && (
                             <Link to={`/order/${id}`}>🔗</Link>
-                          )}
-{' '}
-{" "}
+                          )}                          {" "}
                           {`${what} from ${where}`}
                         </div>
                       </div>
-                      <div className="text-adaptive">
-                        {!archived && `${who} is handling this order.`}
-                        <br />
-                        {`${orderedSoFar(
-                          minimumKind,
-                          members
-                        )} ${minimumKind} / ${minimum} ${minimumKind} ordered`}
-                        <br />
-                        {!archived && `Deadline set for ${when}`}
+                      <div className="text-adaptive  ">
+                        <p className="lh-copy">
+                          {!archived && `${who} is handling this order.`}
+                        </p>
+                        <p className="lh-copy">
+                          {`${orderedSoFar(
+                            minimumKind,
+                            members
+                          )} ${minimumKind} / ${minimum} ${minimumKind} ordered`}
+                        </p>
+                        <p className="lh-copy">
+                          
+{!archived && `Deadline set for ${when}`}
+                        </p>
                       </div>
                       {ready ? (
                         <button
                           type="button"
                           className="btn mt-40 sm action-1"
                           onClick={() =>
-                            archived ? handleReorder(id) : handleArchive(id)
-                          }
+                            archived ? handleReorder(id) : handleArchive(id)}
                         >
                           <small className="color-main action-3">
                             {archived
