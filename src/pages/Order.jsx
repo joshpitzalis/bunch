@@ -133,7 +133,7 @@ export default function Order({auth}) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {menu}
+                  Price List
                 </a>
                 <br />
               </div>
