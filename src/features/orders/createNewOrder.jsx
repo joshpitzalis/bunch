@@ -21,13 +21,13 @@ export default ({ uid, setOrder }) => {
       minimumKind: "rupees",
       menu: ""
     },
-    validate: values => {
-      const errors = {};
-      if (!values.when) {
-        errors.when = "It's optional, but we recommend setting a deadline.";
-      }
-      return errors;
-    },
+    // validate: values => {
+    //   const errors = {};
+    //   if (!values.when) {
+    //     errors.when = "It's optional, but we recommend setting a deadline.";
+    //   }
+    //   return errors;
+    // },
     onSubmit: async (values, { setSubmitting }) => {
       const doc = firebase
         .firestore()
@@ -178,6 +178,7 @@ export default ({ uid, setOrder }) => {
                           onChange={handleChange}
                           value={values.minimum}
                           className="tr pt2"
+                          min="0"
                         />
                         <select
                           className="w4 pt2"
@@ -199,7 +200,7 @@ export default ({ uid, setOrder }) => {
                       data-aos-delay="300"
                     >
                       <div className="mb-10 f-14 semibold text-uppercase sp-20">
-                        Link to menu or pricelist?
+                        Link to pricelist?
                       </div>
                       <input
                         type="text"

@@ -57,8 +57,6 @@ export default function Order({auth}) {
     members &&
     members.findIndex(item => item.uid === auth.uid);
 
-  console.log({ myOrderIndex });
-
   const [user, setUser] = React.useState({ name: "", mobile: "" });
 
   React.useEffect(() => {
