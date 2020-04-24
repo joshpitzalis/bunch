@@ -52,7 +52,12 @@ export default function Order({auth}) {
         );
 
   const myOrderIndex =
-    members && members.findIndex(item => item.uid === auth && auth.uid);
+    auth &&
+    auth.uid &&
+    members &&
+    members.findIndex(item => item.uid === auth.uid);
+
+  console.log({ myOrderIndex });
 
   const [user, setUser] = React.useState({ name: "", mobile: "" });
 
@@ -105,7 +110,7 @@ export default function Order({auth}) {
           <div className="row flex justify-center">
             <div className="col-xl-3 col-lg-4 col-md-7">
               <div
-                className=" lh-title mb-10  bold  sp-20 color-heading text-adaptive flex flex-column items-center w5"
+                className=" lh-title mb-10  bold  sp-20 color-heading text-adaptive flex flex-column items-center w5 center"
                 data-aos-duration="600"
                 data-aos="fade-down"
                 data-aos-delay="300"
@@ -119,7 +124,7 @@ export default function Order({auth}) {
             </div>
             {!!menu && (
               <div
-                className=" lh-title mb-10  bold  sp-20 color-heading text-adaptive flex flex-column items-center w5"
+                className=" pt0-ns pt4 lh-title mb-10  bold  sp-20 color-heading text-adaptive flex flex-column items-center w5"
                 data-aos-duration="600"
                 data-aos="fade-down"
                 data-aos-delay="300"

@@ -55,8 +55,6 @@ export default ({
       .then(async ({ user }) => {
         await writeUserToDatabase(name, mobile, user.uid);
         values.uid = user.uid;
-        console.log({ values });
-
         await setValues(values);
       })
       .catch(error => {
