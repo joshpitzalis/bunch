@@ -1,5 +1,5 @@
 import React from "react";
-import { useFormik, setNestedObjectValues } from "formik";
+import { useFormik } from "formik";
 import { useToasts } from "@zeit-ui/react";
 import PhoneInput from "react-phone-input-2";
 import firebase from "../../utils/firebase";
@@ -168,10 +168,10 @@ export default ({
                     </div>
 
                     <div className="col-md-2 color-heading f-14 semibold text-uppercase sp-20 pb-15 ">
-                      Amount
+                      {`Quantity (in ${minimumKind})`}
                     </div>
                     <div className="col-xl-3 col-md-3 color-heading f-14 semibold text-uppercase sp-20 pb-15 ">
-                      Price
+                      Total Cost
                     </div>
                   </div>
 

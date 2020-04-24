@@ -178,13 +178,13 @@ to complete the order.`}
                           className="color-heading f-14 semibold text-uppercase sp-20"
                           scope="col"
                         >
-                          Order
+                          Quantity
                         </th>
                         <th
                           className="color-heading f-14 semibold text-uppercase sp-20 tr"
                           scope="col"
                         >
-                          Amount
+                          Total Cost
                         </th>
                         {/* <th className="color-heading f-14 semibold text-uppercase sp-20" scope="col">Paid</th> */}
                       </tr>
