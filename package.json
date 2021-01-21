@@ -9,7 +9,7 @@
     "@zeit-ui/react": "0.0.1-beta.31",
     "firebase": "^7.14.1",
     "formik": "^2.1.4",
-    "immer": "^6.0.3",
+    "immer": "^8.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-phone-input-2": "^2.13.3",
